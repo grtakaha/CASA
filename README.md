@@ -1,4 +1,4 @@
-# Protein Alignment Tool
+# Computer-Assisted Sequence Annotation (CASA)
 
 A centralized tool manager for four scripts used to process and visualize protein sequences.
 
