@@ -1,0 +1,13 @@
+	prot	whole_prot	type	description	evidences	location.start.value	location.start.modifier	location.end.value	location.end.modifier	featureId	featureCrossReferences	ligand.name	ligand.id	ligand.note	alternativeSequence.originalSequence	alternativeSequence.alternativeSequences
+0	A0A164XSU3_DAUCS	tr|A0A164XSU3|A0A164XSU3_DAUCS	Signal		[{'evidenceCode': 'ECO:0000256', 'source': 'SAM', 'id': 'SignalP'}]	1	EXACT	27	EXACT							
+1	A0A164XSU3_DAUCS	tr|A0A164XSU3|A0A164XSU3_DAUCS	Chain	Cysteine protease	[{'evidenceCode': 'ECO:0000256', 'source': 'SAM', 'id': 'SignalP'}]	28	EXACT	354	EXACT	PRO_5018759784						
+2	A0A164XSU3_DAUCS	tr|A0A164XSU3|A0A164XSU3_DAUCS	Domain	Cathepsin propeptide inhibitor	[{'evidenceCode': 'ECO:0000259', 'source': 'SMART', 'id': 'SM00848'}]	50	EXACT	106	EXACT							
+3	A0A164XSU3_DAUCS	tr|A0A164XSU3|A0A164XSU3_DAUCS	Domain	Peptidase C1A papain C-terminal	[{'evidenceCode': 'ECO:0000259', 'source': 'SMART', 'id': 'SM00645'}]	136	EXACT	351	EXACT							
+0	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Signal		[{'evidenceCode': 'ECO:0000255'}]	1	EXACT	18	EXACT							
+1	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Propeptide	Activation peptide	[{'evidenceCode': 'ECO:0000269', 'source': 'PubMed', 'id': '2106878'}, {'evidenceCode': 'ECO:0000269', 'source': 'PubMed', 'id': '2500950'}]	19	EXACT	134	EXACT	PRO_0000026408						
+2	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Chain	Chymopapain		135	EXACT	352	EXACT	PRO_0000026409						
+3	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Active site		[{'evidenceCode': 'ECO:0000255', 'source': 'PROSITE-ProRule', 'id': 'PRU10088'}]	159	EXACT	159	EXACT							
+4	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Active site		[{'evidenceCode': 'ECO:0000255', 'source': 'PROSITE-ProRule', 'id': 'PRU10089'}]	293	EXACT	293	EXACT							
+5	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Active site		[{'evidenceCode': 'ECO:0000255', 'source': 'PROSITE-ProRule', 'id': 'PRU10090'}]	313	EXACT	313	EXACT							
+6	PAPA2_CARPA	sp|P14080|PAPA2_CARPA	Glycosylation	N-linked (GlcNAc...) asparagine	[{'evidenceCode': 'ECO:0000255', 'source': 'PROSITE-ProRule', 'id': 'PRU00498'}]	86	EXACT	86	EXACT							
+							
