@@ -27,6 +27,7 @@ Command-Line Arguments:
     --num_res
 """
 
+import os
 import argparse
 import api_funcs as af
 from helpers import find_path, fasta_to_df
@@ -40,7 +41,7 @@ def parse_args():
     """
 
     parser = argparse.ArgumentParser(prog="UniProt BLAST script",
-                                     description="BLASTs FASTA sequences against current SwissProt release.")
+                                     description="BLASTs FASTA sequences against a given BLAST database.")
 
     parser.add_argument("-i", "--infile", help="Full path of input file.")
     parser.add_argument("-o", "--out_directory", default="./",
@@ -48,6 +49,10 @@ def parse_args():
     parser.add_argument("-s", "--stype", default="protein",
                         help="Sequence type (\"protein\" is currently the only option).")
     parser.add_argument("-nr", "--num_res", default="10", help="Number of results.")
+    parser.add_argument("-db", "--database", default=None,
+                        help="(optional) Full file path to a protein FASTA file " +
+                        "that can be used as a BLAST database. " +
+                        "makeblastdb will be run on this file if no BLAST database exists.")
 
     return parser.parse_args()
 
@@ -71,8 +76,21 @@ def main(args):
     out_directory = find_path(args.out_directory, "w", "d").replace("\\", "/")
     print(f"Storing outputs in {out_directory}\n", flush=True)
 
-    # Check for Swiss-Prot files in installation path.
-    af.verify_sprot()
+    if not args.database:
+        # Check for Swiss-Prot files in installation path.
+        af.verify_sprot()
+        
+        sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
+                               "w", "d")
+        db = f"{sprot_path}/uniprot_sprot.fasta"
+                
+    else:
+        db = find_path(args.database, "r", "f").replace("\\", "/")
+
+    # Check if a BLAST database exists for the given FASTA file.
+    # Make BLAST database if one does not exist.
+    if not af.check_blastdb(db):
+        af.make_blastdb(db)
 
     # TODO: Add readable results back in. Right now it only outputs outfmt6.
     for protein in infile_df.index.values:
@@ -89,7 +107,7 @@ def main(args):
         with open(query, "w", encoding="utf-8") as q_fasta:
             q_fasta.write(f"{accession}\n{sequence}\n")
 
-        af.blast(query, args.stype, f"{out_prefix}", num_res=args.num_res)
+        af.blast(query, args.stype, f"{out_prefix}", num_res=args.num_res, db=db)
 
         with open(f"{out_prefix}.tsv", "r", encoding="utf-8") as b_res:
             blast_results = b_res.read()

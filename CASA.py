@@ -82,6 +82,10 @@ def parse_args():
                         "The following example is default behavior. " +
                         "Ex. -f \"Active site:#0000ff,Disulfide bond:#e27441," +
                         "Propeptide:#9e00f2,Signal:#2b7441\"")
+    parser.add_argument("-db", "--database", default=None,
+                        help="(optional) Full file path to a protein FASTA file " +
+                        "that can be used as a BLAST database. " +
+                        "makeblastdb will be run on this file if no BLAST database exists.")
 
     return parser.parse_args()
 
