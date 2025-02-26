@@ -138,4 +138,35 @@ def read_alignment(infile, max_header=16):
         alignment.add_protein(prot)
 
     alignment.set_conserved_res() # set conserved residues for the completed alignment
+
     return alignment
+
+def parse_kwargs(options_string):
+    """
+    Parses a string of keyword arguments
+    in the format described in alignment.py and search_proteins.py
+    Ex. [--residuenumber,--iterations 3,--outfmt clu,--force]
+        Parameters:
+            options_string (str): A string of bracketed, comma-
+                                  separated keywords and values.
+
+        Returns:
+            kwargs (dict): Dictionary of keyword arguments.
+    """
+    
+    # It's written like this, with "[]" flanking the input
+    # because argparse doesn't like the starting "-"
+    # This is now the kwargs for blast.
+    kwargs = {}
+    kwpair_list = options_string[1:-1].split(",") # Remove [] at start and end.
+    for pair in kwpair_list:
+        pair_split = pair.split(" ")
+        # key should always be without spaces and should NOT start with "-"
+        key = pair_split[0]
+        # value is written this way in case there is an option with spaces.
+        # File paths, specified with quotes, might be like this.
+        # -outfmt might also be like this.
+        value = " ".join(pair_split[1:])
+        kwargs[key] = value
+        
+    return kwargs

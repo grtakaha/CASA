@@ -213,7 +213,7 @@ def verify_sprot():
     print("Latest Swiss-Prot files successfully verified.\n", flush=True)
 
 # TODO: Allow submission of a user-inputted database.
-def blast(infile, stype, out_prefix, num_res="5", db=None):
+def blast(infile, stype, out_prefix, num_res="5", db=None, **kwargs):
     """
     BLASTs a given FASTA-formatted query against a local Swiss-Prot database.
 
@@ -230,12 +230,45 @@ def blast(infile, stype, out_prefix, num_res="5", db=None):
             BLAST results in outfmt 6 (TSV) form.
 
     """
+    
+    print("Warning: If both -db [database] and -bopts \"-db [database]\"" +
+          " were set, the -bopts database will be used.\n",
+          flush=True)
 
-    # If the user has not inputted their own database, use the downloaded Swiss-Prot db.
-    if not db:
-        sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
-                               "w", "d")
-        db = f"{sprot_path}/uniprot_sprot.fasta"
+    # If the user has set db in kwargs, save here.
+    if kwargs.get("-db"):
+        db = kwargs.get("-db")
+
+    else:
+        # If the user has not inputted their own database, use Swiss-Prot.
+        if not db:
+            # Check for Swiss-Prot files in installation path.
+            verify_sprot()            
+            sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
+                                   "w", "d")
+            db = f"{sprot_path}/uniprot_sprot.fasta"
+
+    # If neither of the above are true, then use whatever was set as db.
+    db = find_path(db, "r", "f").replace("\\", "/")    
+
+    # Check if a BLAST database exists for the given FASTA file.
+    # Make BLAST database if one does not exist.
+    if not check_blastdb(db):
+        make_blastdb(db)
+
+    kwargs["-db"] = db
+
+    print("Warning: If both -num_res [num_res] and -bopts" +
+          " \"-num_alignments [num_res]\"" +
+          " were set, the -bopts number of results (num_alignments)" +
+          " will be used.\n",
+          flush=True)
+
+    # num_alignments overrides num_res
+    if kwargs.get("-num_alignments"):
+        num_res = kwargs.get("-num_alignments")
+    else:
+        kwargs["-num_alignments"] = num_res
 
     title = db.split("/")[-1]
 
@@ -255,14 +288,37 @@ def blast(infile, stype, out_prefix, num_res="5", db=None):
 
     print(f"BLASTing {infile} against {title} at {db}.\n",
           flush=True)
-    # TODO: Unpack and submit all functional blastp options.
+    
+    # TODO: Consider allowing modification of outfmt.
     # TODO: Consider adding back readable output.
-    subprocess.run([program,
-                    "-db", db,
-                    "-query", infile,
-                    "-outfmt", "6",
-                    "-out", f"{out_prefix}.tsv",
-                    "-num_alignments", num_res], check=True)
+
+    # I'll need to override query, outfmt, and out(?)
+    # Everything else should be ok.
+    print("Warning: \"-query\", \"-outfmt\", and \"-out\"" +
+          " cannot be set by -bopts.\n",
+          flush=True)
+    
+    kwargs["-query"] = infile
+    kwargs["-outfmt"] = "6"
+    kwargs["-out"] = f"{out_prefix}.tsv"
+
+    # Add arguments to a list for submission to subprocces
+    sub_args = [program]
+    for key, value in kwargs.items():
+        sub_args.append(key)
+        # This handles anything that doesn't require a value (like --force)
+        if value != "":        
+            sub_args.append(value)
+    
+    try:
+        subprocess.run(sub_args, check=True)
+    except subprocess.CalledProcessError as err:
+        print("Call to blastp failed.\n" +
+              "Please ensure that all arguments are valid blastp arguments.\n" +
+              "Valid arguments can be shown via CLI with \"blastp -h\".\nExiting...",
+              flush=True)
+        exit()
+        #raise subprocess.CalledProcessError
 
 def get_fasta(fid):
     """
@@ -303,7 +359,7 @@ def get_fasta(fid):
 
     return response.text
 
-def align(infile, stype, out_directory, title):
+def align(infile, stype, out_directory, title, **kwargs):
     """
     Aligns given FASTA file using command-line Clustal Omega.
 
@@ -321,15 +377,63 @@ def align(infile, stype, out_directory, title):
 
     """
 
-    print(f"Aligning {title}...\n", flush=True)
-    stype_conv = {"protein":"Protein", "dna":"DNA", "rna":"RNA"}
-    subprocess.run(["clustalo",
-                    "--infile", infile,
-                    "--outfile", f"{out_directory}/{title}.clustal",
-                    "--seqtype", stype_conv[stype],
-                    "--distmat-out", f"{out_directory}/{title}.pim",
-                    "--percent-id", "--full",
-                    "--outfmt", "clu", "--force"], check=True)
+    print(f"Aligning...\n", flush=True)
+    #print(f"Aligning {title}...\n", flush=True)
+    #stype_conv = {"protein":"Protein", "dna":"DNA", "rna":"RNA"}
+    #subprocess.run(["clustalo",
+                    #"--infile", infile,
+                    #"--outfile", f"{out_directory}/{title}.clustal",
+                    #"--seqtype", stype_conv[stype],
+                    #"--distmat-out", f"{out_directory}/{title}.pim",
+                    #"--percent-id", "--full",
+                    #"--outfmt", "clu", "--force"], check=True)
+    
+
+    print("Warning: Paths to any specified output files (like those " +
+          "necessary for --distmat-out) will be overridden using " +
+          "CASA's --out_directory option.\n",
+          flush=True)
+
+    # Override outputs for other files if they are provided
+    # Delete (pop) alternative names for these options (like -l for log).
+    if kwargs.get("--distmat-out"):
+        kwargs["--distmat-out"] = f"{out_directory}/{title}.distmat"
+    if kwargs.get("--guidetree-out"):
+        kwargs["--guidetree-out"] = f"{out_directory}/{title}.guidetree"
+    if kwargs.get("--clustering-out"):
+        kwargs["--clustering-out"] = f"{out_directory}/{title}.clustering"
+    if kwargs.get("--posterior-out"):
+        kwargs["--posterior-out"] = f"{out_directory}/{title}.posterior"
+    if kwargs.get("-l") or kwargs.get("--log"):
+        kwargs.pop("-l", None)
+        kwargs["--log"] = f"{out_directory}/{title}.log"
+
+    # Override outputs for important options, regardless of if provided.
+    # Delete (pop) alternative names for these options.
+    kwargs.pop("-i", None)
+    kwargs.pop("--in", None)    
+    kwargs["--infile"] = infile
+    kwargs.pop("-o", None)
+    kwargs.pop("--out", None)
+    kwargs["--outfile"] = f"{out_directory}/{title}.clustal"
+    kwargs["--seqtype"] = stype
+
+    # Add arguments to a list for submission to subprocces
+    sub_args = ["clustalo"]
+    for key, value in kwargs.items():
+        sub_args.append(key)
+        # This handles anything that doesn't require a value (like --force)
+        if value != "":
+            sub_args.append(value)
+
+    try:
+        subprocess.run(sub_args, check=True)
+    except subprocess.CalledProcessError as err:
+        print("Call to clustalo failed.\n" +
+              "Please ensure that all arguments are valid clustalo arguments.\n" +
+              "Valid arguments can be shown via CLI with \"custalo -h\".\nExiting...",
+              flush=True)
+        exit()    
 
 def get_metadata(mid):
     """

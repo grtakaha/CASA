@@ -86,6 +86,16 @@ def parse_args():
                         help="(optional) Full file path to a protein FASTA file " +
                         "that can be used as a BLAST database. " +
                         "makeblastdb will be run on this file if no BLAST database exists.")
+    parser.add_argument("-bopts", "--blast_options", default="",
+                        help="(optional) Bracketed, comma-separated list of valid blastp input parameters. " +
+                        "Valid arguments can be shown via CLI with \"blastp -h\". " +
+                        "File locations (like -import_search_strategy) MUST be full file paths (not relative). " +
+                        "Example Usage: -bopts \"[-threshold 0,-sorthits 4,-max_hsps 1]\"" )
+    parser.add_argument("-copts", "--clustal_options", default="[--full,--outfmt clu,--force]",
+                        help="(optional) Bracketed, comma-separated list of valid clustalo input parameters. " +
+                        "Valid arguments can be shown via CLI with \"clustalo -h\"." +
+                        "File locations (like --hmm-in) MUST be full file paths (not relative). " +
+                        "Example Usage: -copts \"[--residuenumber,--iterations 3]\"" )
 
     return parser.parse_args()
 
@@ -136,7 +146,7 @@ def execute_tool(args):
                 infiles = find_outputs(args)
                 print("blast tool executed in a multi run.")
                 #print("here2", args.order)
-                print(f"Remaining calls ({args.order}) will be executed on {infiles}.\n")
+                print(f"Remaining calls ({full_order[i+1:]}) will be executed on {infiles}.\n")
                 for in_f in infiles:
                     # Reset to original full_order for each blast result.
                     args.order = full_order[i+1:] # Start after blast call.

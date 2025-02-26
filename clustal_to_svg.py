@@ -652,6 +652,8 @@ def main(args):
     if args.features != "None":
         feature_pairs = args.features.split(",")
         features = {}
+        ##### HERE
+        print(feature_pairs)
         for pair in feature_pairs:
             feature, color = pair.split(":")
             features[feature] = color

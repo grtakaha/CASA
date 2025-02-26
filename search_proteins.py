@@ -25,12 +25,14 @@ Command-Line Arguments:
     --out_directory
     --stype
     --num_res
+    --database
+    --blast_options
 """
 
 import os
 import argparse
 import api_funcs as af
-from helpers import find_path, fasta_to_df
+from helpers import find_path, fasta_to_df, parse_kwargs
 
 def parse_args():
     """
@@ -48,11 +50,16 @@ def parse_args():
                         help="Full path of output directory.")
     parser.add_argument("-s", "--stype", default="protein",
                         help="Sequence type (\"protein\" is currently the only option).")
-    parser.add_argument("-nr", "--num_res", default="10", help="Number of results.")
+    parser.add_argument("-nr", "--num_res", default="5", help="(optional) Number of results.")
     parser.add_argument("-db", "--database", default=None,
                         help="(optional) Full file path to a protein FASTA file " +
                         "that can be used as a BLAST database. " +
                         "makeblastdb will be run on this file if no BLAST database exists.")
+    parser.add_argument("-bopts", "--blast_options", default="",
+                        help="(optional) Bracketed, comma-separated list of valid blastp input parameters. " +
+                        "Valid arguments can be shown via CLI with \"blastp -h\". " +
+                        "File locations (like -import_search_strategy) MUST be full file paths (not relative). " +
+                        "Example Usage: -bopts \"[-threshold 0,-sorthits 4,-max_hsps 1]\"" )
 
     return parser.parse_args()
 
@@ -76,21 +83,15 @@ def main(args):
     out_directory = find_path(args.out_directory, "w", "d").replace("\\", "/")
     print(f"Storing outputs in {out_directory}\n", flush=True)
 
+    bopts = parse_kwargs(args.blast_options)
+
     if not args.database:
-        # Check for Swiss-Prot files in installation path.
-        af.verify_sprot()
-        
         sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
                                "w", "d")
         db = f"{sprot_path}/uniprot_sprot.fasta"
-                
+
     else:
         db = find_path(args.database, "r", "f").replace("\\", "/")
-
-    # Check if a BLAST database exists for the given FASTA file.
-    # Make BLAST database if one does not exist.
-    if not af.check_blastdb(db):
-        af.make_blastdb(db)
 
     # TODO: Add readable results back in. Right now it only outputs outfmt6.
     for protein in infile_df.index.values:
@@ -107,7 +108,10 @@ def main(args):
         with open(query, "w", encoding="utf-8") as q_fasta:
             q_fasta.write(f"{accession}\n{sequence}\n")
 
-        af.blast(query, args.stype, f"{out_prefix}", num_res=args.num_res, db=db)
+        # Values in bopts will override num_res and db.
+        # This is because bopts must be more intentionally set.
+
+        af.blast(query, args.stype, f"{out_prefix}", num_res=args.num_res, db=db, **bopts)
 
         with open(f"{out_prefix}.tsv", "r", encoding="utf-8") as b_res:
             blast_results = b_res.read()
@@ -119,16 +123,27 @@ def main(args):
         # Parse blast_results (tsv form).
         # Skip last line (empty).
         # No header in command-line blastp outfmt6.
+        # Keep track of which hits (form: sp|A2WQ39|ANS1_ORYSI) had multiple
+        # alignments in BLAST.
+        # This will cause problems downstream. Do not allow multiple hits.
+        hit_dict = {}
         for line in blast_results.split("\n")[0:-1]:
             hit = line.split("\t")[1]
             print(f"Found BLAST hit: {hit}", flush=True)
-
-            hit_name = hit.split(" ")[0].split("|")[-1]
-            hit_fasta = af.get_fasta(hit_name)
-            with open(f"{prot_directory}/{hit_name}.fasta", "w", encoding="utf-8") as fasta:
-                fasta.write(hit_fasta)
-            with open(f"{prot_directory}/all.fasta", "a", encoding="utf-8") as all_fasta:
-                all_fasta.write(hit_fasta)
+            
+            if not hit_dict.get(hit):
+                hit_name = hit.split(" ")[0].split("|")[-1]
+                hit_fasta = af.get_fasta(hit_name)
+                with open(f"{prot_directory}/{hit_name}.fasta", "w", encoding="utf-8") as fasta:
+                    fasta.write(hit_fasta)
+                with open(f"{prot_directory}/all.fasta", "a", encoding="utf-8") as all_fasta:
+                    all_fasta.write(hit_fasta)
+                # Set existence of hit in hit_dict
+                hit_dict[hit] = 1
+            else:
+                print(f"Hit already found. It likely has multiple " +
+                      "alignments in BLAST results.\nConsider using: -max_hsps 1\n" +
+                      "Continuing...\n\n")
 
 if __name__ == "__main__":
     args = parse_args()
