@@ -55,7 +55,7 @@ def parse_args():
                         help="(optional) Full file path to a protein FASTA file " +
                         "that can be used as a BLAST database. " +
                         "makeblastdb will be run on this file if no BLAST database exists.")
-    parser.add_argument("-bopts", "--blast_options", default="",
+    parser.add_argument("-bopts", "--blast_options", default="[]",
                         help="(optional) Bracketed, comma-separated list of valid blastp input parameters. " +
                         "Valid arguments can be shown via CLI with \"blastp -h\". " +
                         "File locations (like -import_search_strategy) MUST be full file paths (not relative). " +
@@ -110,7 +110,6 @@ def main(args):
 
         # Values in bopts will override num_res and db.
         # This is because bopts must be more intentionally set.
-
         af.blast(query, args.stype, f"{out_prefix}", num_res=args.num_res, db=db, **bopts)
 
         with open(f"{out_prefix}.tsv", "r", encoding="utf-8") as b_res:

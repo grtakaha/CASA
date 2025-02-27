@@ -86,7 +86,7 @@ def parse_args():
                         help="(optional) Full file path to a protein FASTA file " +
                         "that can be used as a BLAST database. " +
                         "makeblastdb will be run on this file if no BLAST database exists.")
-    parser.add_argument("-bopts", "--blast_options", default="",
+    parser.add_argument("-bopts", "--blast_options", default="[]",
                         help="(optional) Bracketed, comma-separated list of valid blastp input parameters. " +
                         "Valid arguments can be shown via CLI with \"blastp -h\". " +
                         "File locations (like -import_search_strategy) MUST be full file paths (not relative). " +
@@ -198,8 +198,9 @@ def main(args):
             Outputs depend on the tool(s) being executed.
     """
 
-    #args = parse_args()
     execute_tool(args)
+
+    print("CASA has finished running!\n", flush=True)
 
 if __name__ == "__main__":
     args = parse_args()

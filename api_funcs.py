@@ -212,7 +212,6 @@ def verify_sprot():
 
     print("Latest Swiss-Prot files successfully verified.\n", flush=True)
 
-# TODO: Allow submission of a user-inputted database.
 def blast(infile, stype, out_prefix, num_res="5", db=None, **kwargs):
     """
     BLASTs a given FASTA-formatted query against a local Swiss-Prot database.
@@ -304,8 +303,11 @@ def blast(infile, stype, out_prefix, num_res="5", db=None, **kwargs):
 
     # Add arguments to a list for submission to subprocces
     sub_args = [program]
+
     for key, value in kwargs.items():
-        sub_args.append(key)
+        # This handles empty -bopts
+        if key != "":
+            sub_args.append(key)
         # This handles anything that doesn't require a value (like --force)
         if value != "":        
             sub_args.append(value)
@@ -421,7 +423,9 @@ def align(infile, stype, out_directory, title, **kwargs):
     # Add arguments to a list for submission to subprocces
     sub_args = ["clustalo"]
     for key, value in kwargs.items():
-        sub_args.append(key)
+        # This handles empty -copts
+        if key != "":
+            sub_args.append(key)
         # This handles anything that doesn't require a value (like --force)
         if value != "":
             sub_args.append(value)
@@ -443,13 +447,15 @@ def get_metadata(mid):
             mid (str): A UniProt ID.
 
         Returns:
-            response (str): A JSON of the given ID's metadata.
+            response_metadata.json() (dict): A dictionary parsed
+                                             from the response of
+                                             a requests library request.
     """
 
     # TODO: Consider returning only annotations.
     # Returns entire JSON.
     url_metadata = f"https://rest.uniprot.org/uniprotkb/{mid}"
-    print(f"Retrieving metadata for {mid}.", flush=True)
+    #print(f"Retrieving metadata for {mid}.", flush=True)
     # Set headers to accept JSON.
     headers = {"Accept": "application/json"}
 
@@ -479,6 +485,54 @@ def get_metadata(mid):
         # If query fails, try again after 10 seconds.
         time.sleep(10)
 
-    print(f"Metadata retrieved for {mid}.\n", flush=True)
+    print(f"Metadata retrieved.", flush=True)
 
+    # Returns a dictionary of the response
     return response_metadata.json()
+
+def parse_json(json):
+    """
+    Takes a metadata JSON dictionary (returned by get_metadata(UniProt_ID)) and
+    returns a tuple that includes:
+        - A list of recommended EC numbers for this UniProt entry.
+          Equivalent to Protein names > EC number on UniProt website.
+        - This UniProt entry's recommended name as listed in UniProt.
+          Equivalent to Protein names > Recommended name on UniProt website.
+
+        Parameters:
+            json (dict): A dictionary parsed
+                         from the response of
+                         a requests library request.
+
+        Returns:
+            (ec_nums, description) (list, str): A tuple of this UniProt entry's recommended
+                                                EC numbers and name in UniProt.
+    """    
+    ec_nums = []
+    description = ""
+
+    json_description = json.get("proteinDescription")
+    rec_name = json_description.get("recommendedName")
+    
+    if rec_name:
+        description = rec_name.get("fullName").get("value")
+        # I don't think this will ever return None, but just in case.
+        # Reset description to "".
+        if not description:
+            print("Description not found.", flush=True)
+            description = ""
+        else:
+            print("Description found.", flush=True)
+
+        ec_dicts = rec_name.get("ecNumbers")
+        if ec_dicts:
+            print("Recommended EC numbers found.", flush=True)
+            for ec in ec_dicts:
+                ec_nums.append(ec.get("value"))
+        else:
+            print("Recommended EC numbers not found.", flush=True)
+    else:
+        print(f"No values found under \"recommendedName\".", flush=True)
+        print(f"Proceeding without empty values.", flush=True)
+
+    return (ec_nums, description)

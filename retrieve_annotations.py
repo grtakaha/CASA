@@ -52,6 +52,7 @@ def main(args):
     """
 
     #args = parse_args()
+    # TODO: Fix checking for duplicates. It doesn't seem to be working here...
 
     infile = find_path(args.infile, "r", "f").replace("\\", "/")
     print(f"Processing sequences from {infile}\n", flush=True)
@@ -113,13 +114,23 @@ def main(args):
     print(f"Storing outputs in {out_directory}\n", flush=True)
 
     features_df_list = []
+    metadata_df_list = []
     for prot_names in proteins:
         prot = prot_names[0]
         whole_prot = prot_names[1]
-        metadata = af.get_metadata(prot)
-
+        print(f"Retrieving metadata for {prot}.", flush=True)
+        
+        metadata = af.get_metadata(prot) # JSON dictionary
+        
         if metadata is not None:
             features = metadata.get("features")
+            ec_nums, description = af.parse_json(metadata)
+            # I don't think this should ever return None,
+            # but if it does, use this:
+            if not ec_nums:
+                ec_nums = []
+            if not description:
+                description = ""
         else:
             features = None
 
@@ -133,13 +144,28 @@ def main(args):
                                                 "location.start.modifier","location.end.value",
                                                 "location.end.modifier"])
 
+        # For now, pdb_structures = "placeholder"
+        pdb_structures = "placeholder"
+        metadata_df_list.append([prot, whole_prot, description, ec_nums, pdb_structures])         
+
+        # Saves for individual protein annotation file.
+        # Don't write individual protein metadata file.
         features_df.to_csv(f"{out_directory}/{prot}.ann", sep="\t")
 
+        # Aggregates all protein annotations.
+        # Do the same for protein descriptions.
         features_df.insert(0, "prot", prot)
         features_df.insert(1, "whole_prot", whole_prot)
         features_df_list.append(features_df)
+        
+        # Make newlines for outputs
+        print("\n\n", flush=True)
+    metadata_df = pd.DataFrame(metadata_df_list, columns=["prot", "whole_prot", "description", "rec_ec_numbers", "pdb_structures"])
+    # Adding in a new output: all.metadata:
+    # Stores EC numbers, descriptions, and PDB structure codes for each protein.
+    metadata_df.to_csv(f"{out_directory}/all.metadata", sep="\t")
 
-    all_features_df = pd.concat(features_df_list, axis=0, join='outer')
+    all_features_df = pd.concat(features_df_list, axis=0, join="outer")
     all_features_df.to_csv(f"{out_directory}/all.ann", sep="\t")
 
 if __name__ == "__main__":
