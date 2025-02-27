@@ -84,54 +84,57 @@ Runs one or more of the below scripts in the order given.
 
 **Usage**:
 ```
-usage: CASA.py [-h] [-i INFILE] [-o OUT_DIRECTORY]
-                   [-ord ORDER [ORDER ...]] [-s STYPE] [-nr NUM_RES]
-                   [-t TITLE] [-c CODES] [-n NUMS] [-u UNIPROT_FORMAT]
-                   [-a ANNOTATIONS] [-f FEATURES]
+usage: CASA.py [-h] [-i INFILE] [-o OUT_DIRECTORY] [-ord ORDER [ORDER ...]] [-s STYPE] [-nr NUM_RES] [-t TITLE]
+               [-c CODES] [-n NUMS] [-u UNIPROT_FORMAT] [-a ANNOTATIONS] [-f FEATURES] [-db DATABASE]
+               [-bopts BLAST_OPTIONS] [-copts CLUSTAL_OPTIONS]
 
-Protein Alignment Tool Manager
+CASA Tool Manager
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
                         Full path of input file
   -o OUT_DIRECTORY, --out_directory OUT_DIRECTORY
                         Full path of output directory.
   -ord ORDER [ORDER ...], --order ORDER [ORDER ...]
-                        Order of tools to run (blast, annotate, align,
-                        svg).Ex. --order align svg
+                        Order of tools to run (blast, annotate, align, svg).Ex. --order align svg
   -s STYPE, --stype STYPE
-                        Sequence type ("protein" is currently the only
-                        option).
+                        Sequence type ("protein" is currently the only option).
   -nr NUM_RES, --num_res NUM_RES
                         Number of results.
   -t TITLE, --title TITLE
                         Alignment title ([TITLE].clustal, [TITLE].pim).
   -c CODES, --codes CODES
-  -n NUMS, --nums NUMS  When set to TRUE, includes total residue numbers at
-                        the end of each line.
+  -n NUMS, --nums NUMS  When set to TRUE, includes total residue numbers at the end of each line.
   -u UNIPROT_FORMAT, --uniprot_format UNIPROT_FORMAT
-                        When set to TRUE, truncates all accessions as if they
-                        were UniProt entries. Ex. sp|P00784|PAPA1_CARPA ->
-                        PAPA1_CARPA
+                        When set to TRUE, truncates all accessions as if they were UniProt entries. Ex.
+                        sp|P00784|PAPA1_CARPA -> PAPA1_CARPA
   -a ANNOTATIONS, --annotations ANNOTATIONS
-                        If an annotation file is provided, it will be used to
-                        annotate the resulting SVG files.
+                        If an annotation file is provided, it will be used to annotate the resulting SVG files.
   -f FEATURES, --features FEATURES
-                        A comma-separated list of feature:color pairs to
-                        include in SVGs.Case sensitive. If features include
-                        spaces, the list must be enclosed in quotes.If no
-                        features should be included, use: -f NoneThe following
-                        example is default behavior. Ex. -f "Active
-                        site:#0000ff,Disulfide
+                        A comma-separated list of feature:color pairs to include in SVGs.Case sensitive. If features
+                        include spaces, the list must be enclosed in quotes.If no features should be included, use: -f
+                        NoneThe following example is default behavior. Ex. -f "Active site:#0000ff,Disulfide
                         bond:#e27441,Propeptide:#9e00f2,Signal:#2b7441"
+  -db DATABASE, --database DATABASE
+                        (optional) Full file path to a protein FASTA file that can be used as a BLAST database.
+                        makeblastdb will be run on this file if no BLAST database exists.
+  -bopts BLAST_OPTIONS, --blast_options BLAST_OPTIONS
+                        (optional) Bracketed, comma-separated list of valid blastp input parameters. Valid arguments
+                        can be shown via CLI with "blastp -h". File locations (like -import_search_strategy) MUST be
+                        full file paths (not relative). Example Usage: -bopts "[-threshold 0,-sorthits 4,-max_hsps 1]"
+  -copts CLUSTAL_OPTIONS, --clustal_options CLUSTAL_OPTIONS
+                        (optional) Bracketed, comma-separated list of valid clustalo input parameters. Valid arguments
+                        can be shown via CLI with "clustalo -h".File locations (like --hmm-in) MUST be full file paths
+                        (not relative). Example Usage: -copts "[--residuenumber,--iterations 3]"
 ```
 
 ### search_proteins.py
 
-Takes one or more protein sequences (FASTA format) as input and BLASTs them against the current Swiss-Prot release (uniprotkb_refprotswissprot).\
+Takes one or more protein sequences (FASTA format) as input and BLASTs them against a given database.\
+If no database is provided via the -db option, the current Swiss-Prot release (uniprotkb_refprotswissprot) will be downloaded and used.
 
-Requires ~1 GB of storage for Swiss-Prot download and creation of BLAST database.
+Requires ~1 GB of storage for Swiss-Prot download and/or creation of BLAST database.
 
 **Swiss-Prot download information**:
 Current Swiss-Prot release is verified/downloaded from:
@@ -142,9 +145,9 @@ Swiss-Prot database and associated files are stored in the same directory as thi
 **INPUT**: FASTA-formatted file with at least one sequence.
 
 **OUTPUT**: A set of directories - one for each sequence in the original input file - that contain the following:
-* the BLAST results for that sequence (the query) against the current Swiss-Prot release in table form ([QUERY].tsv)
-* individual FASTA files with UniProt sequences for each BLAST hit
-* one FASTA file containing all protein sequences, including the query sequence (all.fasta)
+* the BLAST results for that sequence (the query) against the current Swiss-Prot release in table form ([QUERY].tsv),
+* individual FASTA files with UniProt sequences for each BLAST hit,
+* one FASTA file containing all protein sequences, including the query sequence (all.fasta).
 
 **NOTE**: --stype dna is currently not supported in any form. May enter an infinite loop. Please do not use --stype dna until updated.
 
@@ -164,22 +167,28 @@ For example: search_proteins.py will yield multiple all.fasta (one for each quer
 
 **Usage**:
 ```
-usage: UniProt BLAST script [-h] [-i INFILE] [-o OUT_DIRECTORY] [-s STYPE]
-                            [-nr NUM_RES]
+usage: UniProt BLAST script [-h] [-i INFILE] [-o OUT_DIRECTORY] [-s STYPE] [-nr NUM_RES] [-db DATABASE]
+                            [-bopts BLAST_OPTIONS]
 
-BLASTs FASTA sequences against current Swiss-Prot release.
+BLASTs FASTA sequences against a given BLAST database.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
                         Full path of input file.
   -o OUT_DIRECTORY, --out_directory OUT_DIRECTORY
                         Full path of output directory.
   -s STYPE, --stype STYPE
-                        Sequence type ("protein" is currently the only
-                        option).
+                        Sequence type ("protein" is currently the only option).
   -nr NUM_RES, --num_res NUM_RES
-                        Number of results.
+                        (optional) Number of results.
+  -db DATABASE, --database DATABASE
+                        (optional) Full file path to a protein FASTA file that can be used as a BLAST database.
+                        makeblastdb will be run on this file if no BLAST database exists.
+  -bopts BLAST_OPTIONS, --blast_options BLAST_OPTIONS
+                        (optional) Bracketed, comma-separated list of valid blastp input parameters. Valid arguments
+                        can be shown via CLI with "blastp -h". File locations (like -import_search_strategy) MUST be
+                        full file paths (not relative). Example Usage: -bopts "[-threshold 0,-sorthits 4,-max_hsps 1]"
 ```
 
 ### retrieve_annotations.py
@@ -189,8 +198,8 @@ Takes one or more protein sequences (FASTA format) as input and retrieves annota
 **INPUT**: A FASTA-formatted, CLUSTAL_NUM-formatted, or CLUSTAL-formatted file with at least one protein sequence.
 
 **OUTPUT**: A collection of files that includes the following:
-* individual annotation files (.ann), one for each unique sequence in the input file
-* one combined annotation file that includes all annotations for this collection of sequences (all.ann)
+* individual annotation files (.ann), one for each unique sequence in the input file,
+* one combined annotation file that includes all annotations for this collection of sequences (all.ann).
 
 **NOTE**: all.ann can be used as input for clustal_to_svg.py. See **ANNOTATION FORMAT** for help formatting annotations by hand.
 
@@ -208,7 +217,7 @@ python -m retrieve_annotations -i ./uniprot_proteins.fasta -o ./annotations_fold
 ```
 usage: retrieve_annotations.py [-h] [-i INFILE] [-o OUT_DIRECTORY]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
                         Full path of input file.
@@ -220,11 +229,9 @@ optional arguments:
 
 Takes at least two protein sequences as input and aligns them using Clustal Omega.
 
-**INPUT**: A FASTA-formatted file with at least two sequences
+**INPUT**: A FASTA-formatted file with at least two sequences.
 
-**OUTPUT**: An alignment (.clustal) and associated percent identity matrix (.pim) of the given FASTA file
-
-**NOTE**: A percent identity matrix will only be generated by Clustal Omega for an input of three or more sequences.
+**OUTPUT**: An alignment (.clustal) of the given FASTA file.
 
 **Example from CASA.py**:
 ```
@@ -238,9 +245,9 @@ python -m alignment -i ./three_proteins.fasta -o ./alignments_folder/ -s protein
 
 **Usage**:
 ```
-usage: alignment.py [-h] [-i INFILE] [-o OUT_DIRECTORY] [-s STYPE] [-t TITLE]
+usage: alignment.py [-h] [-i INFILE] [-o OUT_DIRECTORY] [-s STYPE] [-t TITLE] [-copts CLUSTAL_OPTIONS]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
                         Full path of input file.
@@ -250,17 +257,21 @@ optional arguments:
                         Sequence type ("protein" or "dna").
   -t TITLE, --title TITLE
                         Alignment title ([TITLE].clustal, [TITLE].pim).
+  -copts CLUSTAL_OPTIONS, --clustal_options CLUSTAL_OPTIONS
+                        (optional) Bracketed, comma-separated list of valid clustalo input parameters. Valid arguments
+                        can be shown via CLI with "clustalo -h".File locations (like --hmm-in) MUST be full file paths
+                        (not relative). Example Usage: -copts "[--residuenumber,--iterations 3]"
 ```
 
 ### clustal_to_svg.py
 
 Reformats a .clustal_num or .clustal alignment into an editable Inkscape SVG. Currently annotates conserved residues (automatic, not optional) and a given list of features (optional).
 
-**INPUT**: A CLUSTAL or CLUSTAL_NUM file
+**INPUT**: A CLUSTAL or CLUSTAL_NUM file.
 
 **OUTPUT**: A sequential set of SVGs (.svg), numbered 0, 1, 2, etc., with formatted alignments and associated conserved residues and/or annotations.
 
-**NOTE**: These SVG outputs were designed to be edited in Inkscape. They retain full functionality when opened in Inkscape, including multiline text-box editability. They retain some functionality when opened in other SVG viewers/editors. They can be viewed and edited in Illustrator, but do not retain multiline text-box editability (each letter is its own text-box). They can also be viewed in Chrome.
+**NOTE**: These SVG outputs were designed to be edited in Inkscape. They retain full functionality when opened in Inkscape, including multiline text-box editability. They retain some functionality when opened in other SVG viewers/editors. They can be viewed and edited in Illustrator, but do not retain multiline text-box editability (each letter is its own text-box). They can also be viewed in browsers like Chrome.
 
 **Example from CASA.py**:
 ```
@@ -274,34 +285,26 @@ python -m clustal_to_svg -i ./alignment.clustal -o ./SVGs/ -u TRUE -c FALSE -n F
 
 **Usage**:
 ```
-usage: clustal_to_svg.py [-h] [-i INFILE] [-o OUT_DIRECTORY] [-c CODES]
-                         [-n NUMS] [-u UNIPROT_FORMAT] [-a ANNOTATIONS]
+usage: clustal_to_svg.py [-h] [-i INFILE] [-o OUT_DIRECTORY] [-c CODES] [-n NUMS] [-u UNIPROT_FORMAT] [-a ANNOTATIONS]
                          [-f FEATURES]
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
   -i INFILE, --infile INFILE
   -o OUT_DIRECTORY, --out_directory OUT_DIRECTORY
                         Full path of output directory.
   -c CODES, --codes CODES
-                        When set to TRUE, includes Clustal identity codes at
-                        the bottom of each block.
-  -n NUMS, --nums NUMS  When set to TRUE, includes total residue numbers at
-                        the end of each line.
+                        When set to TRUE, includes Clustal identity codes at the bottom of each block.
+  -n NUMS, --nums NUMS  When set to TRUE, includes total residue numbers at the end of each line.
   -u UNIPROT_FORMAT, --uniprot_format UNIPROT_FORMAT
-                        When set to TRUE, truncates all accessions as if they
-                        were UniProt entries. Ex. sp|P00784|PAPA1_CARPA ->
-                        PAPA1_CARPA
+                        When set to TRUE, truncates all accessions as if they were UniProt entries. Ex.
+                        sp|P00784|PAPA1_CARPA -> PAPA1_CARPA
   -a ANNOTATIONS, --annotations ANNOTATIONS
-                        If an annotation file is provided, it will be used to
-                        annotate the resulting SVG files.
+                        If an annotation file is provided, it will be used to annotate the resulting SVG files.
   -f FEATURES, --features FEATURES
-                        A comma-separated list of feature:color pairs to
-                        include in SVGs. Case sensitive. If features include
-                        spaces, the list must be enclosed in quotes. If no
-                        features should be included, use: -f None The
-                        following example is default behavior. Ex. -f "Active
-                        site:#0000ff,Disulfide
+                        A comma-separated list of feature:color pairs to include in SVGs.Case sensitive. If features
+                        include spaces, the list must be enclosed in quotes.If no features should be included, use: -f
+                        NoneThe following example is default behavior. Ex. -f "Active site:#0000ff,Disulfide
                         bond:#e27441,Propeptide:#9e00f2,Signal:#2b7441"
 ```
 
