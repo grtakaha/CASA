@@ -121,10 +121,13 @@ def main(args):
         print(f"Retrieving metadata for {prot}.", flush=True)
         
         metadata = af.get_metadata(prot) # JSON dictionary
-        
+        print(list(metadata.keys()))
+        print(metadata.get("uniProtKBCrossReferences"))
+
         if metadata is not None:
             features = metadata.get("features")
-            ec_nums, description = af.parse_json(metadata)
+            ec_nums, description, pdb_ids = af.parse_json(metadata)
+            
             # I don't think this should ever return None,
             # but if it does, use this:
             if not ec_nums:
@@ -144,9 +147,7 @@ def main(args):
                                                 "location.start.modifier","location.end.value",
                                                 "location.end.modifier"])
 
-        # For now, pdb_structures = "placeholder"
-        pdb_structures = "placeholder"
-        metadata_df_list.append([prot, whole_prot, description, ec_nums, pdb_structures])         
+        metadata_df_list.append([prot, whole_prot, description, ec_nums, pdb_ids])         
 
         # Saves for individual protein annotation file.
         # Don't write individual protein metadata file.
@@ -159,8 +160,8 @@ def main(args):
         features_df_list.append(features_df)
         
         # Make newlines for outputs
-        print("\n\n", flush=True)
-    metadata_df = pd.DataFrame(metadata_df_list, columns=["prot", "whole_prot", "description", "rec_ec_numbers", "pdb_structures"])
+        print("\n", flush=True)
+    metadata_df = pd.DataFrame(metadata_df_list, columns=["prot", "whole_prot", "description", "rec_ec_numbers", "pdb_ids"])
     # Adding in a new output: all.metadata:
     # Stores EC numbers, descriptions, and PDB structure codes for each protein.
     metadata_df.to_csv(f"{out_directory}/all.metadata", sep="\t")

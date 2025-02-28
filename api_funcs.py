@@ -510,10 +510,29 @@ def parse_json(json):
     """    
     ec_nums = []
     description = ""
+    pdb_ids = []
 
     json_description = json.get("proteinDescription")
-    rec_name = json_description.get("recommendedName")
+    if json_description:
+        rec_name = json_description.get("recommendedName")
+    else:
+        print(f"No values found under \"proteinDescription\".", flush=True)
+        print(f"Proceeding with empty values.", flush=True)
+        rec_name = None
     
+    # This saves PDB IDs
+    json_crossref = json.get("uniProtKBCrossReferences")
+    if json_crossref:
+        for crossref in json_crossref:
+            database = crossref.get("database")
+            data_id = crossref.get("id")
+            if database == "PDB":
+                if data_id:
+                    pdb_ids.append(data_id) 
+    else:
+        print(f"No values found under \"uniProtKBCrossReferences\".", flush=True)
+        print(f"Proceeding with empty values.", flush=True)   
+
     if rec_name:
         description = rec_name.get("fullName").get("value")
         # I don't think this will ever return None, but just in case.
@@ -533,6 +552,6 @@ def parse_json(json):
             print("Recommended EC numbers not found.", flush=True)
     else:
         print(f"No values found under \"recommendedName\".", flush=True)
-        print(f"Proceeding without empty values.", flush=True)
+        print(f"Proceeding with empty values.", flush=True)
 
-    return (ec_nums, description)
+    return (ec_nums, description, pdb_ids)
