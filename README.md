@@ -34,7 +34,7 @@ https://blast.ncbi.nlm.nih.gov/doc/blast-help/references.html#references
 General:
 * Internet connection (when running search_proteins.py and retrieve_annotations.py)
 * Python 3.7+
-* ~ 1 GB of storage for Swiss-Prot BLAST database (if running search_proteins.py)
+* ~ 1 GB of storage for Swiss-Prot download and/or creation of BLAST database (if running search_proteins.py)
 
 Command-line tools:
 * Clustal Omega (http://www.clustal.org/omega/)
@@ -49,7 +49,9 @@ Before running, ensure that required command-line tools are on your PATH.
 * Clustal Omega is required for alignment.py
 * NCBI BLAST+ is required for search_proteins.py
 
-Download and add the protein_alignment_tool directory to PATH and PYTHONPATH.
+Download and add the CASA directory to PATH and PYTHONPATH.
+
+Other installation recommendations and protocols can be found in CASA_extra_protocols.pdf
 
 ## SCRIPTS
 
