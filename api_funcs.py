@@ -419,6 +419,8 @@ def align(infile, stype, out_directory, title, **kwargs):
     kwargs.pop("--out", None)
     kwargs["--outfile"] = f"{out_directory}/{title}.clustal"
     kwargs["--seqtype"] = stype
+    kwargs["--force"] = ""
+    kwargs["--outfmt"] = "clustal" # Always output clustal format
 
     # Add arguments to a list for submission to subprocces
     sub_args = ["clustalo"]

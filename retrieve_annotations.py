@@ -121,8 +121,8 @@ def main(args):
         print(f"Retrieving metadata for {prot}.", flush=True)
         
         metadata = af.get_metadata(prot) # JSON dictionary
-        print(list(metadata.keys()))
-        print(metadata.get("uniProtKBCrossReferences"))
+        #print(list(metadata.keys())) # Doesn't work if None
+        #print(metadata.get("uniProtKBCrossReferences"))
 
         if metadata is not None:
             features = metadata.get("features")
@@ -136,6 +136,9 @@ def main(args):
                 description = ""
         else:
             features = None
+            ec_nums = []
+            description = ""
+            pdb_ids = ""
 
         if features is not None:
             features_df = pd.json_normalize(features)
