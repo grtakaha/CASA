@@ -78,7 +78,8 @@ def main(args):
             proteins.append((prot, acc.split(" ")[0]))
     elif (infile.endswith(".clustal") or 
           infile.endswith(".clustal_num") or 
-          infile.endswith(".aln-clustal_num")):
+          infile.endswith(".aln-clustal_num") or
+          infile.endswith(".aln-clustal")):
         alignment = read_alignment(infile)
         for whole_prot in alignment.proteins:
             # Set to UniProt format the way FASTA files are read in by default.
