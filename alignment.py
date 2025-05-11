@@ -54,7 +54,8 @@ def parse_args():
                         help="(optional) Bracketed, comma-separated list of valid clustalo input parameters. " +
                         "Valid arguments can be shown via CLI with \"clustalo -h\"." +
                         "File locations (like --hmm-in) MUST be full file paths (not relative). " +
-                        "Example Usage: -copts \"[--residuenumber,--iterations 3]\"" )
+                        "Example Usage: -copts \"[--residuenumber,--iterations 3]\" " +
+                        "Default: -copts \"[--full,--outfmt clu,--force]\"")
     
     # Instead, have no control over where it saves for a multi run (or just in general) always save in the same location as the output directory
     
