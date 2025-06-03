@@ -33,7 +33,7 @@ import urllib
 from contextlib import closing
 import gzip
 import requests
-from helpers import find_path
+from helpers import find_path, fasta_to_df
 
 def get_ftp(filename, out_dir, action="save"):
     """
@@ -234,28 +234,30 @@ def blast(infile, stype, out_prefix, num_res="5", db=None, **kwargs):
           " were set, the -bopts database will be used.\n",
           flush=True)
 
-    # If the user has set db in kwargs, save here.
-    if kwargs.get("-db"):
-        db = kwargs.get("-db")
+    ## If the user has set db in kwargs, save here.
+    #if kwargs.get("-db"):
+        #db = kwargs.get("-db")
 
-    else:
-        # If the user has not inputted their own database, use Swiss-Prot.
-        if not db:
-            # Check for Swiss-Prot files in installation path.
-            verify_sprot()            
-            sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
-                                   "w", "d")
-            db = f"{sprot_path}/uniprot_sprot.fasta"
+    #else:
+        ## If the user has not inputted their own database, use Swiss-Prot.
+        #if not db:
+            ## Check for Swiss-Prot files in installation path.
+            #verify_sprot()            
+            #sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
+                                   #"w", "d")
+            #db = f"{sprot_path}/uniprot_sprot.fasta"
 
-    # If neither of the above are true, then use whatever was set as db.
-    db = find_path(db, "r", "f").replace("\\", "/")    
+    ## If neither of the above are true, then use whatever was set as db.
+    #db = find_path(db, "r", "f").replace("\\", "/")    
+
+    #kwargs["-db"] = db
 
     # Check if a BLAST database exists for the given FASTA file.
     # Make BLAST database if one does not exist.
     if not check_blastdb(db):
         make_blastdb(db)
 
-    kwargs["-db"] = db
+    #kwargs["-db"] = db
 
     print("Warning: If both -num_res [num_res] and -bopts" +
           " \"-num_alignments [num_res]\"" +
@@ -322,7 +324,46 @@ def blast(infile, stype, out_prefix, num_res="5", db=None, **kwargs):
         exit()
         #raise subprocess.CalledProcessError
 
-def get_fasta(fid):
+#def get_fasta(fid):
+    #"""
+    #Takes in a UniProt ID and returns that ID's FASTA-formatted sequence.
+
+        #Parameters:
+            #fid (str): A UniProt ID.
+
+        #Returns:
+            #response (str): A FASTA-formatted UniProt sequence.
+    #"""
+
+    #url_fasta = f"https://rest.uniprot.org/uniprotkb/{fid}.fasta"
+
+    ## Rerun the request until it returns 200.
+    #current_request = "FASTA retrieval"
+    #while True:
+        #try:
+            #response = requests.get(url_fasta)
+            #if response.status_code != 200:
+                #print(f"{current_request} status code: " +
+                      #f"{response.status_code}. Retrying...\n", flush=True)
+            #else:
+                #break
+
+        #except requests.exceptions.ConnectionError as errc:
+            #print(f"{current_request} caused a connection error: " +
+                  #f"{errc}. Retrying...\n", flush=True)
+        #except requests.exceptions.RequestException as err:
+            #print(f"{current_request} caused exception: {err}. Exiting...\n",
+                  #flush=True)
+            #sys.exit()
+
+        ## If query fails, try again after 10 seconds.
+        #time.sleep(10)
+
+    #print(f"FASTA found for {fid}.\n", flush=True)
+
+    #return response.text
+
+def get_fasta(fid, db_fasta):
     """
     Takes in a UniProt ID and returns that ID's FASTA-formatted sequence.
 
@@ -333,33 +374,22 @@ def get_fasta(fid):
             response (str): A FASTA-formatted UniProt sequence.
     """
 
-    url_fasta = f"https://rest.uniprot.org/uniprotkb/{fid}.fasta"
-
-    # Rerun the request until it returns 200.
     current_request = "FASTA retrieval"
-    while True:
-        try:
-            response = requests.get(url_fasta)
-            if response.status_code != 200:
-                print(f"{current_request} status code: " +
-                      f"{response.status_code}. Retrying...\n", flush=True)
-            else:
-                break
 
-        except requests.exceptions.ConnectionError as errc:
-            print(f"{current_request} caused a connection error: " +
-                  f"{errc}. Retrying...\n", flush=True)
-        except requests.exceptions.RequestException as err:
-            print(f"{current_request} caused exception: {err}. Exiting...\n",
-                  flush=True)
-            sys.exit()
+    try:
+        #hit = db_fasta.loc[fid]
+        acc = db_fasta.at[fid, "Accession"]
+        seq = db_fasta.at[fid, "Sequence"]
+        #acc = hit["Accession"]
+        #seq = hit["Sequence"]
+        print(f"FASTA found for {fid}.\n", flush=True)
+    except KeyError as err:
+        print(f"{current_request} caused exception: {err}.\n" +
+              f"{fid} could not be found in {db}.\nExiting...\n",
+              flush=True)
+        sys.exit()
 
-        # If query fails, try again after 10 seconds.
-        time.sleep(10)
-
-    print(f"FASTA found for {fid}.\n", flush=True)
-
-    return response.text
+    return f"{acc}\n{seq}\n"
 
 def align(infile, stype, out_directory, title, **kwargs):
     """

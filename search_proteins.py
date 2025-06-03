@@ -93,6 +93,31 @@ def main(args):
     else:
         db = find_path(args.database, "r", "f").replace("\\", "/")
 
+    print("Warning: If both -db [database] and -bopts \"-db [database]\"" +
+          " were set, the -bopts database will be used.\n",
+          flush=True)
+
+    # If the user has set db in kwargs, save here.
+    if bopts.get("-db"):
+        db = bopts.get("-db")
+
+    else:
+        # If the user has not inputted their own database, use Swiss-Prot.
+        if not db:
+            # Check for Swiss-Prot files in installation path.
+            verify_sprot()            
+            sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
+                                   "w", "d")
+            db = f"{sprot_path}/uniprot_sprot.fasta"
+
+    # If neither of the above are true, then use whatever was set as db.
+    db = find_path(db, "r", "f").replace("\\", "/")    
+
+    bopts["-db"] = db
+
+    db_fasta = fasta_to_df(db)
+
+
     # TODO: Add readable results back in. Right now it only outputs outfmt6.
     for protein in infile_df.index.values:
         print(f"BLASTing {protein}...", flush=True)
@@ -132,7 +157,8 @@ def main(args):
             
             if not hit_dict.get(hit):
                 hit_name = hit.split(" ")[0].split("|")[-1]
-                hit_fasta = af.get_fasta(hit_name)
+                hit_fasta = af.get_fasta(hit_name, db_fasta) # I'm pretty sure this is >name\nseq\n format
+                #hit_fasta = af.get_fasta(hit_name)
                 with open(f"{prot_directory}/{hit_name}.fasta", "w", encoding="utf-8") as fasta:
                     fasta.write(hit_fasta)
                 with open(f"{prot_directory}/all.fasta", "a", encoding="utf-8") as all_fasta:
