@@ -5,6 +5,8 @@ A centralized tool manager for four scripts used to process and visualize protei
 If you find CASA useful, please consider citing our paper: http://doi.org/10.1002/aps3.70009
 (And don't forget to cite BLAST and Clustal Omega!)
 
+Example data and figures can be found at the OSF repository: https://osf.io/xnmha/
+
 **NOTE**: These scripts make use of EMBL-EBI and NCBI resources. References for tools and databases used here include:
 
 UniProt:\
