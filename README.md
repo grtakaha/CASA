@@ -40,7 +40,7 @@ BMC Bioinformatics 10, no. 1 (December 2009): 1–9. https://doi.org/10.1186/147
 https://blast.ncbi.nlm.nih.gov/doc/blast-help/references.html#references
 
 ### CASA SVG Example
-**Notes**:
+**NOTE**:
 * This PNG was cropped and saved with a white background.
 * Unedited CASA SVG outputs have transparent backgrounds and start with a 7.5in x 9in page size.
 * Original SVG taken from our CASA OSF repository: https://osf.io/xnmha/ 
