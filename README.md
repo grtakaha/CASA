@@ -35,6 +35,9 @@ BMC Bioinformatics 10, no. 1 (December 2009): 1–9. https://doi.org/10.1186/147
 
 https://blast.ncbi.nlm.nih.gov/doc/blast-help/references.html#references
 
+### CASA SVG Example
+<img width="3750" height="4500" alt="alignment" src="https://github.com/user-attachments/assets/a46e10d0-33f7-4df1-afde-0a2a5238a405" />
+
 ### Prerequisites
 General:
 * Internet connection (when running search_proteins.py and retrieve_annotations.py)
