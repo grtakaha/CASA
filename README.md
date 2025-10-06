@@ -2,6 +2,10 @@
 
 A centralized tool manager for four scripts used to process and visualize protein sequences.
 
+![APS3-13-e70009-g002](https://github.com/user-attachments/assets/467c7e8f-d518-489b-a17e-aa50d2b8667a)
+
+See below for example(s). If you want to generate publication-quality, annotated protein sequence alignments, CASA might be your tool!
+
 If you find CASA useful, please consider citing our paper: http://doi.org/10.1002/aps3.70009
 (And don't forget to cite BLAST and Clustal Omega!)
 
