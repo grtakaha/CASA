@@ -1,6 +1,7 @@
 # Computer-Assisted Sequence Annotation (CASA)
 
 A centralized tool manager for four scripts used to process and visualize protein sequences.
+**NOTE**: Image from http://doi.org/10.1002/aps3.70009
 
 ![APS3-13-e70009-g002](https://github.com/user-attachments/assets/467c7e8f-d518-489b-a17e-aa50d2b8667a)
 
