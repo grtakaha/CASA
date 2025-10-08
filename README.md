@@ -69,7 +69,7 @@ Before running, ensure that required command-line tools are on your PATH.
 
 Download and add the CASA directory to PATH and PYTHONPATH.
 
-Other installation recommendations and protocols can be found in CASA_extra_protocols.pdf
+Other installation recommendations and protocols can be found in CASA/extra_protocols.pdf
 
 ## SCRIPTS
 
