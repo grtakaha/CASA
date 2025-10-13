@@ -86,26 +86,29 @@ def main(args):
     bopts = parse_kwargs(args.blast_options)
 
     if not args.database:
-        sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
-                               "w", "d")
-        db = f"{sprot_path}/uniprot_sprot.fasta"
+        db = None # This is redundant...but just being sure
 
     else:
         db = find_path(args.database, "r", "f").replace("\\", "/")
 
-    print("Warning: If both -db [database] and -bopts \"-db [database]\"" +
+    print("Warning: If both -db DATABASE and -bopts \"[-db DATABASE]\"" +
           " were set, the -bopts database will be used.\n",
           flush=True)
 
     # If the user has set db in kwargs, save here.
+    # This will overwrite your previous db,
+    # whether or not it was set to None.
     if bopts.get("-db"):
         db = bopts.get("-db")
 
     else:
         # If the user has not inputted their own database, use Swiss-Prot.
-        if not db:
+        # This will ONLY execute if the user hasn't specified at least one of the following:
+        # -db DATABASE
+        # -bopts [-db DATABASE]
+        if not db:          
             # Check for Swiss-Prot files in installation path.
-            verify_sprot()            
+            af.verify_sprot()            
             sprot_path = find_path(f"{os.path.abspath(os.path.dirname(__file__))}/SwissProt/",
                                    "w", "d")
             db = f"{sprot_path}/uniprot_sprot.fasta"
